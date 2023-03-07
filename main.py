@@ -30,8 +30,7 @@ while True:
         answer = response["choices"][0]["message"]["content"]
         context += f'assistant:{answer}\n'
     except openai.error.APIError as e:
-        answer = e.error
-        break
+        answer = e
 
     print(answer.replace('assistant:', ''))
     print('-' * terminal_width, '\n' * 2)
