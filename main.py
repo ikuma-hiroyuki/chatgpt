@@ -1,30 +1,37 @@
 import os
+import shutil
 
 import openai
 from dotenv import load_dotenv
 
 load_dotenv()
 
+terminal_width = shutil.get_terminal_size().columns
+
 openai.api_key = os.getenv('API_KEY')
 
-dialog_message = 'Enter your prompt. (Please enter "exit()" to terminate)\n'
+dialog_message = 'Enter your prompt. (Please enter "exit()" to terminate)\n\n'
 context = ''
 
 while True:
-    prompt = f"Q:{input(dialog_message)}\n"
-    if prompt == 'Q:exit()\n':
+    prompt = input(dialog_message)
+    if prompt == 'exit()':
         break
 
-    context += prompt
+    context += f"user:{prompt}\n"
 
-    if prompt:
-        print('\nGenerating response...\n')
+    print('\nGenerating response...\n')
+    try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "system", "content": context}],
             temperature=0.0,
         )
+        answer = response["choices"][0]["message"]["content"]
+        context += f'assistant:{answer}\n'
+    except openai.error.APIError as e:
+        answer = e.error
+        break
 
-        answer = f'A:{response["choices"][0]["message"]["content"]}'
-        context += answer
-        print(f'{answer}', '\n' * 5)
+    print(answer.replace('assistant:', ''))
+    print('-' * terminal_width, '\n' * 2)
