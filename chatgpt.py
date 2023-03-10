@@ -7,10 +7,8 @@ from colorama import Fore, Style
 
 load_dotenv()
 
-terminal_width = shutil.get_terminal_size().columns
-
 openai.api_key = os.getenv('API_KEY')
-
+terminal_width = shutil.get_terminal_size().columns
 dialog_message = Fore.GREEN + 'Enter your prompt. (Please enter "exit()" to terminate)\n\n' + Style.RESET_ALL
 context = ''
 
@@ -29,10 +27,10 @@ while True:
             temperature=0.0,
         )
         answer = response["choices"][0]["message"]["content"]
-        context += f'assistant:{answer}\n'
     except openai.error.APIError as e:
         print(e)
     else:
+        context += f'assistant:{answer}\n'
         print(answer.replace('assistant:', ''))
 
     print('-' * terminal_width)
