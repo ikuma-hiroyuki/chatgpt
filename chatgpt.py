@@ -2,12 +2,9 @@ import os
 import shutil
 
 import openai
-from colorama import Fore, Style
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.syntax import Syntax
-
-console = Console()
 
 
 def output_terminal(lines):
@@ -31,35 +28,34 @@ def output_terminal(lines):
 
 
 def chat():
-    load_dotenv()
-    openai.api_key = os.getenv('API_KEY')
-    terminal_width = shutil.get_terminal_size().columns
-    dialog_message = Fore.GREEN + 'Enter your prompt. (Please enter "exit()" to terminate)\n\n' + Style.RESET_ALL
-    context = ''
+    print("AIアシスタントとチャットを始めます。チャットを終了させる場合は exit() と入力してください。")
+    system_content = input("AIアシスタントに演じてほしい役割がある場合は入力してください。(ない場合はエンターキーを押してください。):\n")
 
+    messages = []
     while True:
-        prompt = input(dialog_message)
-        if prompt == 'exit()':
+        user_input = input("あなた: ")
+        if user_input == 'exit()':
             break
 
-        context += f"user:{prompt}\n"
+        if system_content:
+            messages.append({"role": "system", "content": system_content})
+        messages.append({"role": "user", "content": user_input})
 
-        print(Fore.CYAN + '\nGenerating response...\n' + Style.RESET_ALL)
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[{"role": "system", "content": context}],
-                temperature=0.0,
-            )
-            answer = response["choices"][0]["message"]["content"]
-        except openai.error.APIError as e:
-            print(e)
-        else:
-            context += f'assistant:{answer}\n'
-            output_terminal(answer)
+        response = openai.ChatCompletion.create(model=os.getenv("MODEL"), messages=messages)
+        answer = response['choices'][0]['message']
+        output_terminal(answer['content'])
 
-        print('-' * terminal_width)
+        messages.append({"role": answer['role'], "content": answer['content']})
+        messages.append({"role": "user", "content": user_input})
+
+        print("-" * terminal_width)
 
 
 if __name__ == '__main__':
+    # 初期設定
+    terminal_width = shutil.get_terminal_size().columns
+    console = Console()
+    load_dotenv()
+    openai.api_key = os.getenv('API_KEY')
+
     chat()
