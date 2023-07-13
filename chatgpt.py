@@ -2,10 +2,10 @@ import os
 import shutil
 
 import openai
+from colorama import Fore
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.syntax import Syntax
-from colorama import Fore, Back
 
 
 def output_terminal(lines):
