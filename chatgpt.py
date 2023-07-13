@@ -5,9 +5,11 @@ import openai
 from dotenv import load_dotenv
 from rich.console import Console
 from rich.syntax import Syntax
+from colorama import Fore, Back
 
 
 def output_terminal(lines):
+    print(f'{Fore.GREEN}AI: {Fore.RESET}', end='')
     code_lines = ''
     language = ''
     is_code_block = False
@@ -28,27 +30,28 @@ def output_terminal(lines):
 
 
 def chat():
+    os.system("cls" if os.name == "nt" else "clear")
     print("AIアシスタントとチャットを始めます。チャットを終了させる場合は exit() と入力してください。")
     system_content = input("AIアシスタントに演じてほしい役割がある場合は入力してください。(ない場合はエンターキーを押してください。):\n")
 
     messages = []
+    if system_content:
+        messages.append({"role": "system", "content": system_content})
+
     while True:
-        user_input = input("あなた: ")
+        user_input = input(f"{Fore.CYAN}あなた: {Fore.RESET}")
         if user_input == 'exit()':
             break
 
-        if system_content:
-            messages.append({"role": "system", "content": system_content})
+        print()
         messages.append({"role": "user", "content": user_input})
 
         response = openai.ChatCompletion.create(model=os.getenv("MODEL"), messages=messages)
         answer = response['choices'][0]['message']
         output_terminal(answer['content'])
+        print("-" * terminal_width)
 
         messages.append({"role": answer['role'], "content": answer['content']})
-        messages.append({"role": "user", "content": user_input})
-
-        print("-" * terminal_width)
 
 
 if __name__ == '__main__':
